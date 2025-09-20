@@ -1,0 +1,28 @@
+keys:
+  # Hosts
+  - &jetstream age1sern5cgzjgjwluesyjylygrd3473ytcr32xe2yqze28gyean7uqqxksgu8
+  - &test age12hxhj3t8k5k5lz5r0tmfuaext2ewerw4er59dhyxr3myk6rwm5qqfhd95e
+  # Users
+  - &Sk7Str1p3 age10snyt77wxuv4uddv3gfl8sz20707xh4pvl3ld0t9dyw8x5zdrerq4vup4m
+  - &root age1pka6sx8ffl2g4hag3qauhfg9n5auunygakhk2ylpx533046t5qnsgn5hq6
+creation_rules:
+  # Host: jetstream
+  - path_regex: ^secrets/hosts/jetstream/.*\.(age|txt)$
+    key_groups:
+      - age:
+          - *jetstream
+  # Host: jetstream
+  - path_regex: ^secrets/hosts/test/.*\.(age|txt)$
+    key_groups:
+      - age:
+          - *test
+  # User: Sk7Str1p3
+  - path_regex: ^secrets/users/Sk7Str1p3/.*\.(age|txt)$
+    key_groups:
+      - age:
+          - *Sk7Str1p3
+  # User: root
+  - path_regex: ^secrets/users/root/.*\.(age|txt)$
+    key_groups:
+      - age:
+          - *root
