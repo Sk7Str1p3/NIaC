@@ -22,7 +22,19 @@
 
   outputs =
     inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
+    let
+      lib = inputs.nixpkgs.lib.extend (
+        lib: _: {
+          custom = import ./helpers { inherit (inputs.nixpkgs) lib; };
+        }
+      );
+    in
+    flake-parts.lib.mkFlake
+      {
+        inherit inputs;
+        specialArgs = { inherit lib; };
+      }
+      {
       systems = [
         "x86_64-linux"
       ];
