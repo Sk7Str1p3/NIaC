@@ -93,4 +93,4 @@ def main():
         Path("/mnt/var/lib/sbctl").mkdir(parents=True)
         shutil.move(src=sbOutDir, dst="/mnt/var/lib/sbctl")
 
-    subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{args.host}", "--extra-experimental-features", "'pipe-operators'"])
+    subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{args.host}"])
