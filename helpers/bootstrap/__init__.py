@@ -1,5 +1,6 @@
 from pathlib import Path
 import subprocess
+import shutil
 
 from tempfile import mkdtemp as mkTempDir
 from .decrypt.masterKeys import decryptMasterKeyFile
@@ -70,5 +71,26 @@ def main():
                     exit(0)
                 case unknown:
                     print(f"Unknown value: {unknown}")
+
+    sbOutDir: Path = outDir / "secureBoot"
+    sbInDir: Path = inDir / "hosts" / f"{args.host}" / "secureBootKeys"
+    if sbInDir.exists():
+        print("Decrypting SB keys...")
+        sbOutDir.mkdir()
+        decryptSopsKey(
+            input=sbInDir / "GUID.age",
+            output=sbOutDir / "GUID",
+            keyFile=outDir / "host.masterKey.txt",
+        )
+        for type in ["KEK", "db", "PK"]:
+            (sbOutDir / f"{type}").mkdir()
+            for ext in ["pem", "key"]:
+                decryptSopsKey(
+                    input=sbInDir / f"{type}" / f"{ext}.age",
+                    output=sbOutDir / f"{type}" / f"{type}.{ext}",
+                    keyFile=outDir / "host.masterKey.txt",
+                )
+        Path("/mnt/var/lib/sbctl").mkdir(parents=True)
+        shutil.move(src=sbOutDir, dst="/mnt/var/lib/sbctl")
 
     subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{args.host}"])
