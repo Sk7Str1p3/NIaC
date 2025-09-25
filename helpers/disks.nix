@@ -1,5 +1,9 @@
 # Helper functions for easy disk configuration
-{ lib, ... }:
+{
+  lib,
+  luksKeysDir ? "/tmp",
+  ...
+}:
 {
   mkDisk =
     {
@@ -105,11 +109,9 @@
           if isEncrypted then
             {
               type = "luks";
-              # TODO: sops-encrypted key files
-              # settings = {
-              #  keyFile = ...;
-              #  passwordFile = ...;
-              # };
+              settings = {
+                passwordFile = "${luksKeysDir}/host.luksKeys.${name}.txt";
+              };
               content = structs.${type};
             }
           else
