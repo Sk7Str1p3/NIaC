@@ -40,7 +40,9 @@ def main():
                     input=luksKeysDir / f"{key}",
                     output=outDir / f"host.luksKeys.{key}.txt",
                 )
-        print("Warning! This will completely overwrite current partition table! Continue? [YES/NO]")
+        print(
+            "Warning! This will completely overwrite current partition table! Continue? [YES/NO]"
+        )
         while True:
             proceed: str = input("[YES/NO]").strip()
             match proceed:
