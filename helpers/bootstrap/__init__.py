@@ -84,5 +84,16 @@ def main():
                 )
         Path("/mnt/var/lib/sbctl").mkdir(parents=True)
         shutil.move(src=sbOutDir, dst="/mnt/var/lib/sbctl")
+        # Move also to current installation because sbctl does not provide option 
+        # for overriding keys location
+        shutil.move(src=sbOutDir, dst="/var/lib/sbctl")
+    
+        try:
+            # ==TODO==: get rid of MS keys
+            subprocess.run(["sbctl", "enroll-keys", "--microsoft"])
+        except Exception as _:
+            print("An error occured!")
+            print("Most likely, you did not enter Setup Mode. Reboot to firmware and enable it")
+            exit(1)
 
     subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{args.host}"])
