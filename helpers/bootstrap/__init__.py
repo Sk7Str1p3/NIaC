@@ -31,16 +31,8 @@ def main():
     if args.disko:
         print("Launching disk partitioning...")
         luksKeysDir = inDir / "hosts" / f"{args.host}" / "luksKeys"
-        luksKeys: list[str] = (
-            [
-                str(item).removeprefix(str(luksKeysDir) + "/").removesuffix(".age")
-                for item in luksKeysDir.iterdir()
-                if item.is_file()
-            ]
-            if luksKeysDir.exists() and luksKeysDir.is_dir()
-            else []
-        )
-        if luksKeys != []:
+        if luksKeysDir.exists():
+            luksKeys = [key.name.removesuffix(".age") for key in luksKeysDir.iterdir()]
             print("Decrypting LUKS password files")
             for key in luksKeys:
                 decryptSopsKey(
