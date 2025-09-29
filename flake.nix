@@ -20,6 +20,9 @@
     disko.inputs.nixpkgs.follows = "nixpkgs";
     lanzaboote.url = "github:nix-community/lanzaboote";
     lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
+    nvf.url = "github:notashelf/nvf/v0.8";
+    nvf.inputs.nixpkgs.follows = "nixpkgs";
+    nvf.inputs.flake-parts.follows = "flake-parts";
   };
 
   outputs =
@@ -37,13 +40,14 @@
         specialArgs = { inherit lib; };
       }
       {
-      systems = [
-        "x86_64-linux"
-      ];
+        systems = [
+          "x86_64-linux"
+        ];
 
-      imports = [
-        ./packages/flakeMod.nix
-        ./shells/self.nix
-      ];
-    };
+        imports = [
+          ./configurations/hosts/flakeMod.nix
+          ./packages/flakeMod.nix
+          ./shells/self.nix
+        ];
+      };
 }
