@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./boot/loader.nix
+  ];
+}

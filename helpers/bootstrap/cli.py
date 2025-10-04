@@ -2,6 +2,10 @@ import argparse
 
 
 def parseCli():
+    """# CLI
+    Get command-line arguments
+    """
+
     parser = argparse.ArgumentParser(description="Installation script for NixOS")
 
     parser.add_argument("--host", type=str, help="Target host", required=True)

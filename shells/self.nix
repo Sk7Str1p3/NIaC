@@ -10,9 +10,10 @@
           age
           nixd
           nixfmt
-          (python3.withPackages (p: with p; [ gpgme ]))
+          (python3.withPackages (p: with p; [ gpgme rich]))
           mypy
           black
+          statix
         ];
       };
     };
