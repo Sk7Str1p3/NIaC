@@ -156,8 +156,6 @@ def main():
                 )
         c.log("[white]Moving SecureBoot keys...")
         try:
-            Path("/mnt/var/lib/sbctl").mkdir(parents=True)
-            Path("/tmp/pki").mkdir(parents=True)
             shutil.copytree(src=sbOutDir, dst="/mnt/var/lib/sbctl")
             shutil.copytree(src=sbOutDir, dst="/tmp/pki")
         except Exception as e:
