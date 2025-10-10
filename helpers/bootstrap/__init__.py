@@ -1,101 +1,175 @@
+#!/usr/bin/env python3
+
+# pyright: reportUnusedCallResult = false
+
+"""Bootstrap script for my NixOS configuration"""
+
 from pathlib import Path
 import subprocess
 import shutil
+from os import environ as env
+from rich import print
+from rich.prompt import Prompt, Confirm
+from rich.console import Console
 
 from tempfile import mkdtemp as mkTempDir
-from .decrypt.masterKeys import decryptMasterKeyFile
-from .decrypt.sopsKeys import decryptSopsKey
-from .cli import parseCli
-from os import environ as env
+from .decrypt import decryptMasterKey, decryptSecret
 
 
 def main():
-    args = parseCli()
+    c = Console()
 
-    inDir = Path(env.get("SELF") or ".") / "secrets"
-    print(f"flake: {str(inDir).removesuffix("secrets")}")
+    inDir = Path(env.get("SELF") or str(env.get("PWD"))) / "secrets"
+
+    c.log(f"[blue]Flake[/]: [white]{str(inDir).removesuffix('/secrets')}")
     outDir = Path(mkTempDir(prefix="secrets."))
-    print(f"Setting $OUT to {str(outDir)}")
+    c.log(f"[blue]OUT[/]: [white]{str(outDir)}[/]")
 
-    print("Decrypting master keys...")
-    decryptMasterKeyFile(
-        input=inDir / "hosts" / f"{args.host}" / "masterKey.gpg",
-        output=outDir / "host.masterKey.txt",
-    )
-    for user in args.users:
-        decryptMasterKeyFile(
-            input=inDir / "users" / f"{user}" / "masterKey.gpg",
-            output=outDir / f"users.{user}.masterKey.txt",
-        )
-
-    if args.disko:
-        print("Launching disk partitioning...")
-        luksKeysDir = inDir / "hosts" / f"{args.host}" / "luksKeys"
-        if luksKeysDir.exists():
-            luksKeys = [key.name.removesuffix(".age") for key in luksKeysDir.iterdir()]
-            print("Decrypting LUKS password files")
-            for key in luksKeys:
-                decryptSopsKey(
-                    keyFile=outDir / "host.masterKey.txt",
-                    input=luksKeysDir / f"{key}",
-                    output=outDir / f"host.luksKeys.{key}.txt",
-                )
-        print(
-            "Warning! This will completely overwrite current partition table! Continue? [YES/NO]"
-        )
+    def get_host():
         while True:
-            proceed: str = input("[YES/NO]").strip()
-            match proceed:
-                case "YES":
-                    subprocess.run(
-                        [
-                            "disko",
-                            "-m",
-                            "destroy,format,mount",
-                            "--yes-wipe-all-disks",
-                            "--arg",
-                            "secretsDir"
-                            f"{outDir}"
-                            f"configurations/hosts/{args.host}/hardware/disks.nix",
-                        ]
+            try:
+                host: str = Prompt().ask("[blue bold underline]Host[/]")
+                if not host:
+                    c.log("[white]No hostname entered[/]")
+                    continue
+                c.log("[white]Checking if host configuration exists...")
+                hostDir: Path = inDir / "hosts" / host
+                if hostDir.exists():
+                    return host
+                else:
+                    c.log(
+                        f'[white]Folder "[underline]{str(hostDir)}[/]" [red bold]not found![/]'
                     )
-                    break
-                case "NO":
-                    print("Cancelled")
-                    exit(0)
-                case unknown:
-                    print(f"Unknown value: {unknown}")
+                    print(
+                        f'Hostname [underline red]"{host}"[/] is [red bold]invalid[/]! Try again'
+                    )
+            except KeyboardInterrupt:
+                print()
+                c.log("[white]Interrupted by user. Exiting...")
+                exit(0)
+
+    # TODO: maybe store info about host in .nix/.json file?
+    def get_users():
+        while True:
+            try:
+                userList: list[str] = (
+                    Prompt().ask("[blue bold underline]Users[/]").split()
+                )
+                if not userList:
+                    c.log("[white]No users entered")
+                    continue
+
+                invalid: list[str] = []
+                c.log("[white]Checking if user configurations exists...")
+                for user in userList:
+                    userDir: Path = inDir / "users" / user
+                    if userDir.exists():
+                        continue
+                    else:
+                        c.log(
+                            f'[white]Folder "[underline]{str(userDir)}[/]" [red bold]not found![/]'
+                        )
+                        invalid.append(user)
+                if not invalid:
+                    return userList
+                else:
+                    print(
+                        f"Usernames [[underline red]{'[/], [underline red]'.join(invalid)}[/]] are [red bold]invalid[/]! Try again"
+                    )
+            except KeyboardInterrupt:
+                print()
+                c.log("[white]Interrupted by user. Exiting...")
+                exit(0)
+
+    host = get_host()
+    users = get_users()
+
+    print(f"Decrypting master keys...")
+    decryptMasterKey(
+        inPath=inDir / "hosts" / host / "masterKey.gpg",
+        outPath=outDir / "host.masterKey.txt",
+    )
+    for user in users:
+        decryptMasterKey(
+            inPath=inDir / "users" / user / "masterKey.gpg",
+            outPath=outDir / f"users.{user}.masterKey.txt",
+        )
+
+    try:
+        if Confirm.ask("Launch disks partitioning?"):
+            if Confirm.ask(
+                "[yellow bold]WARNING[/]: This will completely overwrite current partition table! Continue?"
+            ):
+                c.log("[white]Launching disk partitioning...")
+                luksKeysDir = inDir / "hosts" / f"{host}" / "luksKeys"
+                if luksKeysDir.exists():
+                    c.log("[white] Found disks secrets, decrypting...")
+                    luksKeys = [key.name for key in luksKeysDir.iterdir()]
+                    for key in luksKeys:
+                        decryptSecret(
+                            keyFile=outDir / "host.masterKey.txt",
+                            inPath=luksKeysDir / f"{key}",
+                            outPath=outDir / f"host.luksKeys.{key}.txt",
+                        )
+                subprocess.run(
+                    [
+                        "disko",
+                        "-m",
+                        "destroy,format,mount",
+                        "--yes-wipe-all-disks",
+                        "--arg",
+                        "secretsDir",
+                        outDir,
+                        f"{str(inDir)}/configurations/hosts/{host}/hardware/disks.nix",
+                    ]
+                )
+
+    except KeyboardInterrupt:
+        print()
+        c.log("[white]Interrupted by user. Exiting...")
+        exit(0)
 
     sbOutDir: Path = outDir / "secureBoot"
-    sbInDir: Path = inDir / "hosts" / f"{args.host}" / "secureBootKeys"
+    sbInDir: Path = inDir / "hosts" / host / "secureBootKeys"
+
     if sbInDir.exists():
-        print("Decrypting SB keys...")
+        c.log("[white]Found secureBoot keys, decrypting...")
         sbOutDir.mkdir()
-        decryptSopsKey(
-            input=sbInDir / "GUID.age",
-            output=sbOutDir / "GUID",
+        decryptSecret(
+            inPath=sbInDir / "GUID.age",
+            outPath=sbOutDir / "GUID",
             keyFile=outDir / "host.masterKey.txt",
         )
         for type in ["KEK", "db", "PK"]:
-            (sbOutDir / f"{type}").mkdir()
+            (sbOutDir / type).mkdir()
             for ext in ["pem", "key"]:
-                decryptSopsKey(
-                    input=sbInDir / f"{type}" / f"{ext}.age",
-                    output=sbOutDir / f"{type}" / f"{type}.{ext}",
+                decryptSecret(
+                    inPath=sbInDir / type / f"{ext}.age",
+                    outPath=sbOutDir / type / f"{type}.{ext}",
                     keyFile=outDir / "host.masterKey.txt",
                 )
+        c.log("[white]Moving SecureBoot keys...")
         Path("/mnt/var/lib/sbctl").mkdir(parents=True)
-        shutil.move(src=sbOutDir, dst="/mnt/var/lib/sbctl")
-        # Move also to current installation because sbctl does not provide option 
-        # for overriding keys location
-        shutil.move(src=sbOutDir, dst="/var/lib/sbctl")
-    
+        Path("/tmp/pki").mkdir(parents=True)
+        try:
+            shutil.copytree(src=sbOutDir, dst="/mnt/var/lib/sbctl")
+            shutil.copytree(src=sbOutDir, dst="/tmp/pki")
+        except Exception as e:
+            print(f"[bold red]An error occured:[/] {e}")
+
         try:
             # ==TODO==: get rid of MS keys
             subprocess.run(["sbctl", "enroll-keys", "--microsoft"])
         except Exception as _:
-            print("An error occured!")
-            print("Most likely, you did not enter Setup Mode. Reboot to firmware and enable it")
+            print("[bold red]An error occured![/]")
+            print(
+                "Most likely, you didn't enter [blue underline]Setup Mode[/]. Reboot to firmware and enable it"
+            )
             exit(1)
 
-    subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{args.host}"])
+    c.log("[white]Running installation...")
+    subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{host}"])
+
+
+if __name__ == "__main__":
+    main()
