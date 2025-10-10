@@ -111,18 +111,24 @@ def main():
                             inPath=luksKeysDir / f"{key}",
                             outPath=outDir / f"host.luksKeys.{key}.txt",
                         )
-                subprocess.run(
-                    [
-                        "disko",
-                        "-m",
-                        "destroy,format,mount",
-                        "--yes-wipe-all-disks",
-                        "--arg",
-                        "secretsDir",
-                        outDir,
-                        f"{str(inDir)}/configurations/hosts/{host}/hardware/disks.nix",
-                    ]
-                )
+                try:
+                    subprocess.run(
+                        [
+                            "disko",
+                            "-m",
+                            "destroy,format,mount",
+                            "--yes-wipe-all-disks",
+                            "--arg",
+                            "secretsDir",
+                            outDir,
+                            f"{str(inDir)}/configurations/hosts/{host}/hardware/disks.nix",
+                        ]
+                    )
+                except Exception as _:
+                    print(
+                        '[red bold]An error occured[/]: Command [blue underline]"Disko[/]" failed!'
+                    )
+                    exit(1)
 
     except KeyboardInterrupt:
         print()
@@ -149,21 +155,21 @@ def main():
                     keyFile=outDir / "host.masterKey.txt",
                 )
         c.log("[white]Moving SecureBoot keys...")
-        Path("/mnt/var/lib/sbctl").mkdir(parents=True)
-        Path("/tmp/pki").mkdir(parents=True)
         try:
+            Path("/mnt/var/lib/sbctl").mkdir(parents=True)
+            Path("/tmp/pki").mkdir(parents=True)
             shutil.copytree(src=sbOutDir, dst="/mnt/var/lib/sbctl")
             shutil.copytree(src=sbOutDir, dst="/tmp/pki")
         except Exception as e:
             print(f"[bold red]An error occured:[/] {e}")
+            exit(1)
 
         try:
             # ==TODO==: get rid of MS keys
             subprocess.run(["sbctl", "enroll-keys", "--microsoft"])
         except Exception as _:
-            print("[bold red]An error occured![/]")
             print(
-                "Most likely, you didn't enter [blue underline]Setup Mode[/]. Reboot to firmware and enable it"
+                "[bold red]An error occured![/] Most likely, you didn't enter [blue underline]Setup Mode[/]. Reboot to firmware and enable it"
             )
             exit(1)
 
