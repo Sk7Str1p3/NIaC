@@ -141,40 +141,39 @@ def main():
     if sbInDir.exists():
         c.log("[white]Found secureBoot keys, decrypting...")
         sbOutDir.mkdir()
+        (sbOutDir / "keys").mkdir()
         decryptSecret(
             inPath=sbInDir / "GUID.age",
             outPath=sbOutDir / "GUID",
             keyFile=outDir / "host.masterKey.txt",
         )
         for type in ["KEK", "db", "PK"]:
-            (sbOutDir / type).mkdir()
+            (sbOutDir / "keys" / type).mkdir()
             for ext in ["pem", "key"]:
                 decryptSecret(
                     inPath=sbInDir / type / f"{ext}.age",
-                    outPath=sbOutDir / type / f"{type}.{ext}",
+                    outPath=sbOutDir / "keys" / type / f"{type}.{ext}",
                     keyFile=outDir / "host.masterKey.txt",
                 )
         c.log("[white]Moving SecureBoot keys...")
         try:
-            Path("/mnt/var/lib/sbctl").mkdir(parents=True)
-            Path("/tmp/pki").mkdir(parents=True)
+            shutil.rmtree(path="/mnt/var/lib/sbctl", ignore_errors=True)
+            shutil.rmtree(path="/tmp/pki", ignore_errors=True)
             shutil.copytree(src=sbOutDir, dst="/mnt/var/lib/sbctl")
             shutil.copytree(src=sbOutDir, dst="/tmp/pki")
         except Exception as e:
             print(f"[bold red]An error occured:[/] {e}")
             exit(1)
 
-        try:
-            # ==TODO==: get rid of MS keys
-            subprocess.run(["sbctl", "enroll-keys", "--microsoft"])
-        except Exception as _:
-            print(
-                "[bold red]An error occured![/] Most likely, you didn't enter [blue underline]Setup Mode[/]. Reboot to firmware and enable it"
-            )
+        # ==TODO==: get rid of MS keys
+        if subprocess.run(["sbctl", "enroll-keys", "--microsoft"]).returncode != 0:
             exit(1)
 
     c.log("[white]Running installation...")
-    subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{host}"])
+    try:
+        subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{host}"])
+    except KeyboardInterrupt:
+        exit(0)
 
 
 if __name__ == "__main__":
