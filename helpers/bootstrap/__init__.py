@@ -171,7 +171,13 @@ def main():
 
     c.log("[white]Running installation...")
     try:
-        subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{host}"])
+        if (
+            subprocess.run(
+                ["nixos-install", "--flake", f"{str(inDir)}#{host}"]
+            ).returncode
+            != 0
+        ):
+            print("[red bold]An error occured:[/] Command [blue underline]\"nixos-install\"[/] failed")
     except KeyboardInterrupt:
         exit(0)
 
