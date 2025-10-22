@@ -177,10 +177,11 @@ def main():
             ).returncode
             != 0
         ):
-            print("[red bold]An error occured:[/] Command [blue underline]\"nixos-install\"[/] failed")
+            print(
+                '[red bold]An error occured:[/] Command [blue underline]"nixos-install"[/] failed'
+            )
     except KeyboardInterrupt:
         exit(0)
-
 
 if __name__ == "__main__":
     main()

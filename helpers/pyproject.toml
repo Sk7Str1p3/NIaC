@@ -5,4 +5,4 @@ version = "0.1.0"
 license = "MIT"
 
 [project.scripts]
-bootstrap = "bootstrap:main"
+bootstrap = "bootstrap_py:main"

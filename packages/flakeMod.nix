@@ -7,7 +7,7 @@
     }:
     {
       packages = {
-        bootstrap = pkgs.callPackage ../helpers/bootstrap/package.nix { inherit self; };
+        bootstrap = pkgs.callPackage ../helpers/bootstrap_py/package.nix { inherit self; };
       };
     };
 }
