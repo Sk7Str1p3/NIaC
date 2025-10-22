@@ -1,6 +1,19 @@
 [package]
-name = "bootstrap"
+name = "NIaC_bootstrap"
 version = "0.1.0"
+authors = ["Sk7Str1p3"]
 edition = "2024"
+description = "Bootstrap script for NIaC dotfiles to automate installation"
+license = "MIT"
+
+[[bin]]
+name = "bootstrap"
+path = "src/main.rs"
+
+[profile.release]
+strip = true
+incremental = true
+overflow-checks = true
+lto = "fat"
 
 [dependencies]
