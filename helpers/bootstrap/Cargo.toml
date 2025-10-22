@@ -17,3 +17,8 @@ overflow-checks = true
 lto = "fat"
 
 [dependencies]
+chrono = "0.4.42"
+colored = "3.0.0"
+tracing = "0.1.41"
+# pin to 0.3.19 until #3369 is resolved
+tracing-subscriber = "=0.3.19"

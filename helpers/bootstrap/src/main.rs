@@ -1,3 +1,7 @@
+mod log;
+
 fn main() {
-    println!("Hello, world!");
+    log::init();
+
+    tracing::info!("Hello, world!");
 }
