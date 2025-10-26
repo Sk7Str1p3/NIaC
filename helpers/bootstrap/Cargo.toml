@@ -20,6 +20,7 @@ lto = "fat"
 chrono = "0.4.42"
 colored = "3.0.0"
 ctrlc = "3.5.0"
+dialoguer = "0.12.0"
 tempdir = "0.3.7"
 tracing = "0.1.41"
 # pin to 0.3.19 until #3369 is resolved

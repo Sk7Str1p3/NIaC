@@ -4,6 +4,8 @@ mod sigint;
 use colored::Colorize as _;
 use std::env;
 use std::path::PathBuf;
+use std::thread::sleep;
+use std::time::Duration;
 use tempdir::TempDir;
 
 fn main() -> Result<(), String> {
@@ -79,6 +81,89 @@ fn main() -> Result<(), String> {
         tracing::info!("{} {}", "OUT:".blue().bold(), output.path().display());
 
         (flake, output)
+    };
+
+    let (host, users) = {
+        let span = tracing::info_span!("input");
+        let _guard = span.enter();
+
+        let host = loop {
+            let input = dialoguer::Input::<'_, String>::new()
+                .with_prompt("Host".blue().bold().underline().to_string())
+                .interact_text()
+                .map_err(|err| {
+                    sleep(Duration::from_millis(1));
+                    err.to_string()
+                })?;
+
+            if input.is_empty() {
+                tracing::error!("No hostname entered");
+                continue;
+            }
+            tracing::info!("Checking if host configuration exists...");
+            let dir = flake.join("hosts").join(&input);
+            if dir.exists() {
+                break input;
+            } else {
+                tracing::error!(
+                    "Folder {} {}",
+                    dir.to_string_lossy().underline(),
+                    "not found!".red().bold()
+                );
+                println!(
+                    "Hostname {} is {} Try again.",
+                    input.red().underline(),
+                    "invalid!".red().bold()
+                );
+            }
+        };
+
+        let users = loop {
+            let input = dialoguer::Input::<'_, String>::new()
+                .with_prompt("Users".blue().bold().underline().to_string())
+                .interact_text()
+                .map_err(|err| err.to_string())?
+                .split(' ')
+                .map(|s| s.into())
+                .collect::<Vec<String>>();
+
+            if input.is_empty() {
+                tracing::error!("No usernames entered");
+                continue;
+            }
+            tracing::info!("Checking if all users configurations exist...");
+
+            let mut invalid_users = Vec::<String>::new();
+            for user in &input {
+                let dir = flake.join("users").join(&user);
+                if dir.exists() {
+                    continue;
+                } else {
+                    tracing::error!(
+                        "Folder {} {}",
+                        dir.display().to_string().underline(),
+                        "not found!".red()
+                    );
+                    invalid_users.push(user.into());
+                }
+            }
+
+            if invalid_users.is_empty() {
+                break input;
+            } else {
+                println!(
+                    "Users {} are {} Try again.",
+                    invalid_users
+                        .iter()
+                        .map(|user| user.red().underline().to_string())
+                        .collect::<Vec<String>>()
+                        .join(", "),
+                    "invalid".red().bold()
+                )
+            }
+        };
+
+        (host, users)
     };
 
     tracing::info!("Hello, world!");

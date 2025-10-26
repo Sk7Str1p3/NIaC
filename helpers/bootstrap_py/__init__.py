@@ -19,65 +19,6 @@ from .decrypt import decryptMasterKey, decryptSecret
 def main():
     c = Console()
 
-    def get_host():
-        while True:
-            try:
-                host: str = Prompt().ask("[blue bold underline]Host[/]")
-                if not host:
-                    c.log("[white]No hostname entered[/]")
-                    continue
-                c.log("[white]Checking if host configuration exists...")
-                hostDir: Path = inDir / "hosts" / host
-                if hostDir.exists():
-                    return host
-                else:
-                    c.log(
-                        f'[white]Folder "[underline]{str(hostDir)}[/]" [red bold]not found![/]'
-                    )
-                    print(
-                        f'Hostname [underline red]"{host}"[/] is [red bold]invalid[/]! Try again'
-                    )
-            except KeyboardInterrupt:
-                print()
-                c.log("[white]Interrupted by user. Exiting...")
-                exit(0)
-
-    # TODO: maybe store info about host in .nix/.json file?
-    def get_users():
-        while True:
-            try:
-                userList: list[str] = (
-                    Prompt().ask("[blue bold underline]Users[/]").split()
-                )
-                if not userList:
-                    c.log("[white]No users entered")
-                    continue
-
-                invalid: list[str] = []
-                c.log("[white]Checking if user configurations exists...")
-                for user in userList:
-                    userDir: Path = inDir / "users" / user
-                    if userDir.exists():
-                        continue
-                    else:
-                        c.log(
-                            f'[white]Folder "[underline]{str(userDir)}[/]" [red bold]not found![/]'
-                        )
-                        invalid.append(user)
-                if not invalid:
-                    return userList
-                else:
-                    print(
-                        f"Usernames [[underline red]{'[/], [underline red]'.join(invalid)}[/]] are [red bold]invalid[/]! Try again"
-                    )
-            except KeyboardInterrupt:
-                print()
-                c.log("[white]Interrupted by user. Exiting...")
-                exit(0)
-
-    host = get_host()
-    users = get_users()
-
     print(f"Decrypting master keys...")
     decryptMasterKey(
         inPath=inDir / "hosts" / host / "masterKey.gpg",
