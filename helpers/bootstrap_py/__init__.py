@@ -89,7 +89,6 @@ def main():
             outPath=outDir / f"users.{user}.masterKey.txt",
         )
 
-    try:
         if Confirm.ask("Launch disks partitioning?"):
             if Confirm.ask(
                 "[yellow bold]WARNING[/]: This will completely overwrite current partition table! Continue?"
@@ -123,11 +122,6 @@ def main():
                         '[red bold]An error occured[/]: Command [blue underline]"Disko[/]" failed!'
                     )
                     exit(1)
-
-    except KeyboardInterrupt:
-        print()
-        c.log("[white]Interrupted by user. Exiting...")
-        exit(0)
 
     sbOutDir: Path = outDir / "secureBoot"
     sbInDir: Path = inDir / "hosts" / host / "secureBootKeys"
@@ -164,18 +158,14 @@ def main():
             exit(1)
 
     c.log("[white]Running installation...")
-    try:
-        if (
-            subprocess.run(
-                ["nixos-install", "--flake", f"{str(inDir)}#{host}"]
-            ).returncode
-            != 0
-        ):
-            print(
-                '[red bold]An error occured:[/] Command [blue underline]"nixos-install"[/] failed'
-            )
-    except KeyboardInterrupt:
-        exit(0)
+    if (
+        subprocess.run(["nixos-install", "--flake", f"{str(inDir)}#{host}"]).returncode
+        != 0
+    ):
+        print(
+            '[red bold]An error occured:[/] Command [blue underline]"nixos-install"[/] failed'
+        )
+
 
 if __name__ == "__main__":
     main()

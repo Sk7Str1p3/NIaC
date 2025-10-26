@@ -1,4 +1,5 @@
 mod log;
+mod sigint;
 
 use colored::Colorize as _;
 use std::env;
@@ -7,6 +8,7 @@ use tempdir::TempDir;
 
 fn main() -> Result<(), String> {
     log::init();
+    sigint::init();
 
     let (flake, output) = {
         let span = tracing::info_span!("dirs_setup");
@@ -56,7 +58,11 @@ fn main() -> Result<(), String> {
         let flake = flake.join("secrets");
 
         let output = match TempDir::new("secrets") {
-            Ok(tmp) => tmp,
+            Ok(tmp) => {
+                let mut tmpdir = sigint::TMPDIR.lock().unwrap();
+                *tmpdir = tmp.path().to_str().unwrap().into();
+                tmp
+            }
             Err(err) => {
                 tracing::error!(
                     "{} Failed to create temporary directory: {}",
