@@ -68,7 +68,7 @@ where
                 meta.target(),
                 spans,
                 meta.file().unwrap_or("/src/{unknown}.rs"),
-                meta.line().unwrap_or(00) //fn_name = visitor.fn_name.unwrap(),
+                meta.line().map(|line| line.to_string()).unwrap_or("?".into()) //fn_name = visitor.fn_name.unwrap(),
             )
             .dimmed()
         )?;
