@@ -19,12 +19,6 @@ from .decrypt import decryptMasterKey, decryptSecret
 def main():
     c = Console()
 
-    inDir = Path(env.get("SELF") or str(env.get("PWD"))) / "secrets"
-
-    c.log(f"[blue]Flake[/]: [white]{str(inDir).removesuffix('/secrets')}")
-    outDir = Path(mkTempDir(prefix="secrets."))
-    c.log(f"[blue]OUT[/]: [white]{str(outDir)}[/]")
-
     def get_host():
         while True:
             try:
