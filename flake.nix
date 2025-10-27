@@ -23,6 +23,9 @@
     nvf.url = "github:notashelf/nvf";
     nvf.inputs.nixpkgs.follows = "nixpkgs";
     nvf.inputs.flake-parts.follows = "flake-parts";
+
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -40,13 +43,14 @@
         specialArgs = { inherit lib; };
       }
       {
-      systems = [
-        "x86_64-linux"
-      ];
+        systems = [
+          "x86_64-linux"
+        ];
 
-      imports = [
-        ./packages/flakeMod.nix
-        ./shells/self.nix
-      ];
-    };
+        imports = [
+          ./configurations/hosts/flakeMod.nix
+          ./packages/flakeMod.nix
+          ./shells/self.nix
+        ];
+      };
 }
