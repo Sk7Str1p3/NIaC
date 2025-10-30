@@ -1,3 +1,4 @@
+mod decrypt;
 mod log;
 mod sigint;
 
@@ -92,7 +93,7 @@ fn main() -> Result<(), String> {
                 .with_prompt("Host".blue().bold().underline().to_string())
                 .interact_text()
                 .map_err(|err| {
-                    sleep(Duration::from_millis(1));
+                    let 
                     err.to_string()
                 })?;
 
@@ -165,6 +166,20 @@ fn main() -> Result<(), String> {
 
         (host, users)
     };
+
+    {
+        let span = tracing::info_span!("gpg_decrypt");
+        let _guard = span.enter();
+        tracing::info!("Decrypting master keys...");
+
+        tracing::info!("Decrypting master key for host {host}");
+        //decrypt::sequoia::decrypt(&flake.join(format!("hosts/{host}/masterKey.gpg")));
+        tracing::info!("Successfully decrypted host key");
+
+        for user in users {
+            tracing::info!("");
+        }
+    }
 
     tracing::info!("Hello, world!");
 
