@@ -21,16 +21,16 @@ where
     dec_path: Out,
 }
 
-impl<I, O> Decryptor<I, O>
+impl<In, Out> Decryptor<In, Out>
 where
-    I: AsRef<Path> + Default,
-    O: AsRef<Path> + Default,
+    In: AsRef<Path> + Default,
+    Out: AsRef<Path> + Default,
 {
     pub fn new() -> Self {
         Self {
-            key: "".to_owned(),
-            enc_path: I::default(),
-            dec_path: O::default(),
+            key: String::default(),
+            enc_path: In::default(),
+            dec_path: Out::default(),
         }
     }
 
@@ -40,14 +40,14 @@ where
         self
     }
 
-    /// Set path of encrypted key
-    pub fn input(&mut self, path: I) -> &mut Self {
+    /// Set path of encrypted file
+    pub fn input(&mut self, path: In) -> &mut Self {
         self.enc_path = path;
         self
     }
 
-    /// Set path where decrypted secret should be places
-    pub fn output(&mut self, path: O) -> &mut Self {
+    /// Set path where decrypted secret should be placed
+    pub fn output(&mut self, path: Out) -> &mut Self {
         self.dec_path = path;
         self
     }
@@ -73,6 +73,7 @@ where
         let dec_str = dec_json["data"].as_str().unwrap();
         fs::write(output, dec_str.as_bytes()).map_err(|e| e.to_string())?;
 
+        // TODO: remove this then ROPS implement recieving key as fn argument not env variable
         unsafe {
             if let Ok(old) = old_key {
                 std::env::set_var("ROPS_AGE", old);

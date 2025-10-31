@@ -2,45 +2,53 @@ mod decrypt;
 mod log;
 mod sigint;
 
+use anyhow::{Result, anyhow};
 use colored::Colorize as _;
-use std::env;
-use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
-use tempdir::TempDir;
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     log::init();
     sigint::init();
 
     let (flake, output) = {
+        use std::env;
+        use std::path::PathBuf;
+        use tempdir::TempDir;
+
         let span = tracing::info_span!("dirs_setup");
         let _guard = span.enter();
 
-        tracing::info!("Searching {}...", "flake".blue());
+        tracing::info!("Searching {flake}...", flake = "flake".blue());
         let flake = match &env::var("NIaC_SELF") {
             Ok(flake) => PathBuf::from(flake),
             Err(err) => {
                 tracing::warn!(
-                    "Failed to read \"NIaC_SELF\" environment variable: {}
-                                                                       Trying to use $PWD instead...",
-                    err.to_string().yellow()
+                    "Failed to read {NIaC_SELF} environment variable: {why}
+                                                                       Trying to use {PWD} instead...",
+                    NIaC_SELF = "\"NIaC_SELF\"".blue().underline(),
+                    why = err.to_string().yellow(),
+                    PWD = "$PWD".yellow().underline()
                 );
                 match env::current_dir() {
                     Ok(pwd) => {
                         let mut pwd = pwd;
                         if !pwd.join("flake.nix").exists() {
                             tracing::warn!(
-                                "Path '{}' does not contain a {}, searching up...",
-                                pwd.display().to_string().yellow(),
-                                "\"flake.nix\"".blue()
+                                "Path '{pwd}' does not contain a {flake}, searching up...",
+                                pwd = pwd.display().to_string().yellow(),
+                                flake = "\"flake.nix\"".blue()
                             );
                         }
                         while !pwd.join("flake.nix").exists() {
                             if !pwd.pop() {
-                                return Err(format!(
-                                    "{} Failed to find flake root!",
-                                    "FATAL".red().bold()
+                                tracing::error!(
+                                    "{FATAL} Failed to find flake root!",
+                                    FATAL = "FATAL: ".red().bold()
+                                );
+                                return Err(anyhow!(
+                                    "{FATAL} Failed to find flake root!",
+                                    FATAL = "FATAL: ".red().bold()
                                 ));
                             }
                         }
@@ -48,16 +56,24 @@ fn main() -> Result<(), String> {
                     }
                     Err(err) => {
                         tracing::error!(
-                            "{} Failed to find flake by $PWD: {}",
-                            "FATAL:".bold().red(),
-                            err.to_string().red().bold()
+                            "{FATAL} Failed to find flake by $PWD: {why}",
+                            FATAL = "FATAL:".bold().red(),
+                            why = err.to_string().red().bold()
                         );
-                        return Err(format!("Failed to find flake: {err}"));
+                        return Err(anyhow!(
+                            "{FATAL} Failed to find flake: {why}",
+                            FATAL = "FATAL: ".red().bold(),
+                            why = err.to_string().red().bold()
+                        ));
                     }
                 }
             }
         };
-        tracing::info!("{} {}", "Flake:".blue().bold(), flake.display());
+        tracing::info!(
+            "{Flake} {path}",
+            Flake = "Flake:".blue().bold(),
+            path = flake.display()
+        );
         let flake = flake.join("secrets");
 
         let output = match TempDir::new("secrets") {
@@ -68,18 +84,22 @@ fn main() -> Result<(), String> {
             }
             Err(err) => {
                 tracing::error!(
-                    "{} Failed to create temporary directory: {}",
-                    "FATAL:".red().bold(),
-                    err.to_string().red().bold()
+                    "{FATAL} Failed to create temporary directory: {why}",
+                    FATAL = "FATAL:".red().bold(),
+                    why = err.to_string().red().bold()
                 );
-                return Err(format!(
-                    "{} Failed to create temporary directory: {}",
-                    "FATAL:".red().bold(),
-                    err.to_string().red().bold()
+                return Err(anyhow!(
+                    "{FATAL} Failed to create temporary directory: {why}",
+                    FATAL = "FATAL:".red().bold(),
+                    why = err.to_string().red().bold()
                 ));
             }
         };
-        tracing::info!("{} {}", "OUT:".blue().bold(), output.path().display());
+        tracing::info!(
+            "{OUT} {path}",
+            OUT = "OUT:".blue().bold(),
+            path = output.path().display()
+        );
 
         (flake, output)
     };
@@ -93,12 +113,12 @@ fn main() -> Result<(), String> {
                 .with_prompt("Host".blue().bold().underline().to_string())
                 .interact_text()
                 .map_err(|err| {
-                    let 
-                    err.to_string()
+                    sleep(Duration::from_millis(1)); // Sleep to let SIGINT handler terminate program in case of Ctrl+C
+                    err
                 })?;
 
             if input.is_empty() {
-                tracing::error!("No hostname entered");
+                tracing::error!("{empty}", empty = "No hostname entered!".red());
                 continue;
             }
             tracing::info!("Checking if host configuration exists...");
@@ -107,14 +127,14 @@ fn main() -> Result<(), String> {
                 break input;
             } else {
                 tracing::error!(
-                    "Folder {} {}",
-                    dir.to_string_lossy().underline(),
-                    "not found!".red().bold()
+                    "Folder {path} {missing}",
+                    path = dir.to_string_lossy().underline(),
+                    missing = "not found!".red()
                 );
                 println!(
-                    "Hostname {} is {} Try again.",
-                    input.red().underline(),
-                    "invalid!".red().bold()
+                    "Hostname {name} is {invalid} Try again.",
+                    name = input.red().underline(),
+                    invalid = "invalid!".red().bold()
                 );
             }
         };
@@ -123,13 +143,16 @@ fn main() -> Result<(), String> {
             let input = dialoguer::Input::<'_, String>::new()
                 .with_prompt("Users".blue().bold().underline().to_string())
                 .interact_text()
-                .map_err(|err| err.to_string())?
+                .map_err(|err| {
+                    sleep(Duration::from_millis(1));
+                    err
+                })?
                 .split(' ')
                 .map(|s| s.into())
                 .collect::<Vec<String>>();
 
             if input.is_empty() {
-                tracing::error!("No usernames entered");
+                tracing::error!("{empty}", empty = "No usernames entered".red());
                 continue;
             }
             tracing::info!("Checking if all users configurations exist...");
@@ -141,9 +164,9 @@ fn main() -> Result<(), String> {
                     continue;
                 } else {
                     tracing::error!(
-                        "Folder {} {}",
-                        dir.display().to_string().underline(),
-                        "not found!".red()
+                        "Folder {path} {missing}",
+                        path = dir.to_string_lossy().underline(),
+                        missing = "not found!".red()
                     );
                     invalid_users.push(user.into());
                 }
@@ -153,13 +176,13 @@ fn main() -> Result<(), String> {
                 break input;
             } else {
                 println!(
-                    "Users {} are {} Try again.",
-                    invalid_users
+                    "Users {names} are {invalid} Try again.",
+                    names = invalid_users
                         .iter()
                         .map(|user| user.red().underline().to_string())
                         .collect::<Vec<String>>()
                         .join(", "),
-                    "invalid".red().bold()
+                    invalid = "invalid".red().bold()
                 )
             }
         };
@@ -168,13 +191,22 @@ fn main() -> Result<(), String> {
     };
 
     {
+        use decrypt::sequoia::Decryptor;
+
         let span = tracing::info_span!("gpg_decrypt");
         let _guard = span.enter();
         tracing::info!("Decrypting master keys...");
 
-        tracing::info!("Decrypting master key for host {host}");
-        //decrypt::sequoia::decrypt(&flake.join(format!("hosts/{host}/masterKey.gpg")));
-        tracing::info!("Successfully decrypted host key");
+        {
+            let span = tracing::info_span!("host");
+            let _guard = span.enter();
+            tracing::info!("Decrypting master key for host {host}...");
+            Decryptor::new()
+                .input(flake.join("hosts").join(host).join("masterKey.gpg"))
+                .output(output.path().join("host.masterKey.txt"))
+                .build()?;
+            tracing::info!("Successfully decrypted host key");
+        }
 
         for user in users {
             tracing::info!("");
