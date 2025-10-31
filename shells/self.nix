@@ -20,8 +20,6 @@
               "rust-analyzer"
                 ];
               })
-            ]
-          ))
           mypy
           black
         ];
