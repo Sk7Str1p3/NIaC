@@ -20,6 +20,7 @@
               "rust-analyzer"
             ];
           })
+          taplo
         ];
       };
     };
