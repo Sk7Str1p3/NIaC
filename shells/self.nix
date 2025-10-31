@@ -18,10 +18,8 @@
             extensions = [
               "rust-src"
               "rust-analyzer"
-                ];
-              })
-          mypy
-          black
+            ];
+          })
         ];
       };
     };
