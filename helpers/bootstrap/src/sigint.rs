@@ -1,6 +1,8 @@
 //! ## Ctrl+C (SIGINT)
 //! Functions executed if job was interrupted with SIGINT
 
+use color_eyre::Result;
+use color_eyre::eyre::Context as _;
 use std::sync::Mutex;
 
 /// Static value indicates path to $OUT.
@@ -18,11 +20,12 @@ fn handle() -> ! {
 }
 
 #[inline]
-pub fn init() {
-    match ctrlc::set_handler(|| {
+pub fn init() -> Result<()> {
+    ctrlc::set_handler(|| {
         handle();
-    }) {
-        Ok(()) => tracing::info!("SIGINT handler initialised"),
-        Err(err) => tracing::error!("Failed to set Ctrl-C handler: {err}"),
-    }
+    })
+    .context("Failed to set Ctrl-C handler")?;
+
+    tracing::info!("SIGINT handler initialised");
+    Ok(())
 }

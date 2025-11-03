@@ -1,16 +1,19 @@
+mod error;
 mod log;
 mod sigint;
 
+use color_eyre::Result;
+use color_eyre::eyre::{Context, bail, eyre};
 use colored::Colorize as _;
 use std::env;
 use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
 use tempdir::TempDir;
-
-fn main() -> Result<(), String> {
-    log::init();
-    sigint::init();
+fn main() -> Result<()> {
+    error::init()?;
+    log::init()?;
+    sigint::init()?;
 
     let (flake, output) = {
         let span = tracing::info_span!("dirs_setup");
@@ -37,10 +40,7 @@ fn main() -> Result<(), String> {
                         }
                         while !pwd.join("flake.nix").exists() {
                             if !pwd.pop() {
-                                return Err(format!(
-                                    "{} Failed to find flake root!",
-                                    "FATAL".red().bold()
-                                ));
+                                bail!("{} Failed to find flake root!", "FATAL".red().bold());
                             }
                         }
                         pwd
@@ -51,7 +51,7 @@ fn main() -> Result<(), String> {
                             "FATAL:".bold().red(),
                             err.to_string().red().bold()
                         );
-                        return Err(format!("Failed to find flake: {err}"));
+                        return Err(eyre!(err)).context("Failed to find flake");
                     }
                 }
             }
@@ -71,11 +71,7 @@ fn main() -> Result<(), String> {
                     "FATAL:".red().bold(),
                     err.to_string().red().bold()
                 );
-                return Err(format!(
-                    "{} Failed to create temporary directory: {}",
-                    "FATAL:".red().bold(),
-                    err.to_string().red().bold()
-                ));
+                return Err(eyre!(err)).context("Failed to create temporary directory");
             }
         };
         tracing::info!("{} {}", "OUT:".blue().bold(), output.path().display());
@@ -93,8 +89,9 @@ fn main() -> Result<(), String> {
                 .interact_text()
                 .map_err(|err| {
                     sleep(Duration::from_millis(1));
-                    err.to_string()
-                })?;
+                    err
+                })
+                .context("Failed to recieve input")?;
 
             if input.is_empty() {
                 tracing::error!("No hostname entered");
@@ -122,7 +119,7 @@ fn main() -> Result<(), String> {
             let input = dialoguer::Input::<'_, String>::new()
                 .with_prompt("Users".blue().bold().underline().to_string())
                 .interact_text()
-                .map_err(|err| err.to_string())?
+                .context("Failed to recieve input")?
                 .split(' ')
                 .map(|s| s.into())
                 .collect::<Vec<String>>();

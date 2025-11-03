@@ -25,3 +25,5 @@ tempdir = "0.3.7"
 tracing = "0.1.41"
 # pin to 0.3.19 until #3369 is resolved
 tracing-subscriber = "=0.3.19"
+color-eyre = "0.6.5"
+tracing-error = "0.2.1"
