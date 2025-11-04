@@ -14,12 +14,7 @@
           age
           nixd
           nixfmt
-          (rust-bin.stable.latest.default.override {
-            extensions = [
-              "rust-src"
-              "rust-analyzer"
-            ];
-          })
+          (rust-bin.fromRustupToolchainFile ../rust-toolchain.toml)
           taplo
         ];
       };
