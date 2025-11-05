@@ -4,13 +4,18 @@ mod error;
 mod log;
 mod sigint;
 
-use color_eyre::Result;
-use color_eyre::eyre::{Context, bail, eyre};
-use colored::Colorize as _;
 use std::env;
 use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
+
+use color_eyre::Result;
+use color_eyre::eyre::{
+    Context,
+    bail,
+    eyre
+};
+use colored::Colorize as _;
 use tempdir::TempDir;
 fn main() -> Result<()> {
     error::init()?;
@@ -46,7 +51,7 @@ fn main() -> Result<()> {
                             }
                         }
                         pwd
-                    }
+                    },
                     Err(err) => {
                         tracing::error!(
                             "{} Failed to find flake by $PWD: {}",
@@ -66,7 +71,7 @@ fn main() -> Result<()> {
                 let mut tmpdir = sigint::TMPDIR.lock().unwrap();
                 *tmpdir = tmp.path().to_str().unwrap().into();
                 tmp
-            }
+            },
             Err(err) => {
                 tracing::error!(
                     "{} Failed to create temporary directory: {}",

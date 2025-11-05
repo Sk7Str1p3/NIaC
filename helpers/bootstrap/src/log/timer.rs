@@ -1,10 +1,10 @@
 //! ## Timer
-//! Module provides type and implementation for custom time formatting in tracing.
-
-use tracing_subscriber::fmt::time::FormatTime;
-use tracing_subscriber::fmt::format::Writer;
+//! Module provides type and implementation for custom time
+//! formatting in tracing.
 
 use colored::Colorize as _;
+use tracing_subscriber::fmt::format::Writer;
+use tracing_subscriber::fmt::time::FormatTime;
 
 /// Timer for logger
 /// ## Example format:
@@ -12,7 +12,10 @@ use colored::Colorize as _;
 pub(super) struct Timer;
 
 impl FormatTime for Timer {
-    fn format_time(&self, writer: &mut Writer<'_>) -> std::fmt::Result {
+    fn format_time(
+        &self,
+        writer: &mut Writer<'_>
+    ) -> std::fmt::Result {
         write!(
             writer,
             "{} ",

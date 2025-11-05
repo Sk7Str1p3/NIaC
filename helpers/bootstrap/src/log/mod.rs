@@ -7,7 +7,8 @@ mod format;
 mod timer;
 mod visitor;
 
-use color_eyre::{Result, eyre::Context};
+use color_eyre::Result;
+use color_eyre::eyre::Context;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::layer::SubscriberExt;
 /// Initializes logger with custom format
