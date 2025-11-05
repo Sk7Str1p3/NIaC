@@ -11,7 +11,8 @@ use tracing_subscriber::fmt::time::FormatTime as _;
 use tracing_subscriber::fmt::{
     FmtContext,
     FormatEvent,
-    FormatFields
+    FormatFields,
+    FormattedFields
 };
 use tracing_subscriber::registry::LookupSpan;
 
@@ -26,7 +27,6 @@ use super::visitor::TracerVisitor;
  <font color="#AAAAAA">20.10.2015 18:39:36</font><font color="#284773"> ∥ </font><font color="#4E9A06">INFO</font><font color="#284773"> ∥ </font><font color="#AAAAAA">bootstrap_rs::log::init (src/log/mod.rs:16): </font>Logger initialized
  <font color="#AAAAAA">20.10.2015 18:39:37</font><font color="#284773"> ∥ </font><font color="#C23439"><b>ERROR</b></font><font color="#284773"> ∥ </font><font color="#AAAAAA">bootstrap_rs::main (src/main.rs:37): </font>Failed to read NIaC_SELF: environment variable not found
 </pre>
-
 "##]
 pub(super) struct Tracer;
 
@@ -57,24 +57,33 @@ where
         let mut visitor = TracerVisitor::new();
         event.record(&mut visitor);
 
-        let spans = if let Some(scope) = ctx.event_scope() {
-            let names: Vec<&str> = scope.from_root().map(|span| span.name()).collect();
-            if !names.is_empty() {
-                format!("::{{{}}}", names.join(", "))
-            } else {
-                String::new()
+        write!(writer, "{}", meta.target().dimmed())?;
+        if let Some(scope) = ctx.event_scope() {
+            write!(writer, "{}", "::{".dimmed())?;
+            for span in scope.from_root() {
+                write!(writer, "{}", span.metadata().name().dimmed())?;
+
+                let ext = span.extensions();
+                if let Some(fields) = &ext.get::<FormattedFields<F>>() {
+                    if !fields.is_empty() {
+                        write!(
+                            writer,
+                            "{}{}{}",
+                            "(".dimmed(),
+                            fields.dimmed(),
+                            ")".dimmed()
+                        )?;
+                    }
+                }
             }
-        } else {
-            String::new()
-        };
+            write!(writer, "{}", "}".dimmed())?;
+        }
 
         write!(
             writer,
             "{}",
             format!(
-                "{}{} ({}:{}): ",
-                meta.target(),
-                spans,
+                " ({}:{}): ",
                 meta.file().unwrap_or("/src/{unknown}.rs"),
                 meta.line()
                     .map(|line| line.to_string())
