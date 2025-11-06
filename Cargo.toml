@@ -1,0 +1,15 @@
+[workspace]
+    resolver = "3"
+
+    [workspace.package]
+        authors     = [ "Sk7Str1p3" ]
+        description = "Crates used in NIaC"
+        edition     = "2024"
+        license     = "MIT"
+        version     = "0.1.0"
+
+[profile.release]
+    incremental     = true
+    lto             = "fat"
+    overflow-checks = true
+    strip           = true
