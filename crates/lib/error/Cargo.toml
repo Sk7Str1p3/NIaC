@@ -1,0 +1,11 @@
+[package]
+    name = "niac_error"
+
+    authors.workspace = true
+    description       = "Errors and panics handler for NIaC scripts"
+    edition.workspace = true
+    license.workspace = true
+    version.workspace = true
+
+[dependencies]
+    color-eyre.workspace = true

@@ -28,7 +28,7 @@ use super::visitor::TracerVisitor;
  <font color="#AAAAAA">20.10.2015 18:39:37</font><font color="#284773"> ∥ </font><font color="#C23439"><b>ERROR</b></font><font color="#284773"> ∥ </font><font color="#AAAAAA">bootstrap_rs::main (src/main.rs:37): </font>Failed to read NIaC_SELF: environment variable not found
 </pre>
 "##]
-pub(super) struct Tracer;
+pub(crate) struct Tracer;
 
 impl<S, F> FormatEvent<S, F> for Tracer
 where

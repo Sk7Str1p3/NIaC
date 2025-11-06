@@ -5,14 +5,14 @@
 use tracing::field::Visit;
 
 /// Visitor type for logger
-pub(super) struct TracerVisitor {
+pub(crate) struct TracerVisitor {
     /// Message of the event
-    pub(super) msg: Option<String>
+    pub(crate) msg: Option<String>
 }
 
 impl TracerVisitor {
     /// Creates new visitor with empty fields
-    pub(super) fn new() -> Self { Self { msg: None } }
+    pub(crate) fn new() -> Self { Self { msg: None } }
 }
 
 impl Visit for TracerVisitor {

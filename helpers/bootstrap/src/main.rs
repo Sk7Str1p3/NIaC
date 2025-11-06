@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 
-mod error;
-mod log;
+use niac_error as error;
+use niac_log as log;
 mod sigint;
 
 use std::env;

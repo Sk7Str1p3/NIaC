@@ -1,0 +1,16 @@
+[package]
+    name = "niac_log"
+
+    authors.workspace = true
+    description       = "Logger for NIaC scripts"
+    edition.workspace = true
+    license.workspace = true
+    version.workspace = true
+
+[dependencies]
+    chrono               = "0.4.42"
+    color-eyre.workspace = true
+    colored.workspace    = true
+    tracing.workspace    = true
+    tracing-error        = "0.2.1"
+    tracing-subscriber   = "=0.3.19"

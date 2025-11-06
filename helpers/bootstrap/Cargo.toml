@@ -1,29 +1,37 @@
 [package]
-name = "NIaC_bootstrap"
-version = "0.1.0"
-authors = ["Sk7Str1p3"]
-edition = "2024"
-description = "Bootstrap script for NIaC dotfiles to automate installation"
-license = "MIT"
+    authors     = [ "Sk7Str1p3" ]
+    description = "Bootstrap script for NIaC dotfiles to automate installation"
+    edition     = "2024"
+    license     = "MIT"
+    name        = "NIaC_bootstrap"
+    version     = "0.1.0"
 
 [[bin]]
-name = "bootstrap"
-path = "src/main.rs"
+    name = "bootstrap"
+    path = "src/main.rs"
 
 [profile.release]
-strip = true
-incremental = true
-overflow-checks = true
-lto = "fat"
+    incremental     = true
+    lto             = "fat"
+    overflow-checks = true
+    strip           = true
 
 [dependencies]
-chrono = "0.4.42"
-colored = "3.0.0"
-ctrlc = "3.5.0"
-dialoguer = "0.12.0"
-tempdir = "0.3.7"
-tracing = "0.1.41"
-# pin to 0.3.19 until #3369 is resolved
-tracing-subscriber = "=0.3.19"
-color-eyre = "0.6.5"
-tracing-error = "0.2.1"
+    chrono = "0.4.42"
+    colored = "3.0.0"
+    ctrlc = "3.5.0"
+    dialoguer = "0.12.0"
+    rops = "0.1.5"
+    sequoia-openpgp = { version = "2.0.0", features = [
+        "allow-experimental-crypto",
+        "allow-variable-time-crypto",
+        "compression",
+        "crypto-rust",
+    ], default-features = false }
+    serde_json = "1.0.145"
+    tempdir = "0.3.7"
+    # pin to 0.3.19 until #3369 is resolved
+    color-eyre.workspace = true
+    niac_error.workspace = true
+    niac_log.workspace   = true
+    tracing.workspace    = true

@@ -9,7 +9,7 @@ use tracing_subscriber::fmt::time::FormatTime;
 /// Timer for logger
 /// ## Example format:
 /// `24.06.2024 15:30:45`
-pub(super) struct Timer;
+pub(crate) struct Timer;
 
 impl FormatTime for Timer {
     fn format_time(

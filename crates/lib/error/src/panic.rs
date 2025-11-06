@@ -56,7 +56,7 @@ use color_eyre::section::PanicMessage;
                                 <font color=blue>⋮ 15 frames hidden ⋮</font>                              
 </pre>
 "#]
-pub(super) struct Panic;
+pub(crate) struct Panic;
 
 impl PanicMessage for Panic {
     fn display(
