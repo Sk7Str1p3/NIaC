@@ -10,20 +10,15 @@ use color_eyre::eyre::Context as _;
 /// This path dropped on SIGINT.
 pub static TMPDIR: Mutex<String> = Mutex::new(String::new());
 
-/// Function executed on Ctrl+C
-fn handle() -> ! {
+#[inline]
+pub fn init() -> Result<()> {
+    ctrlc::set_handler(|| {
     println!();
     tracing::info!("Interrupted by user, exiting...");
 
     #[allow(unused_must_use)]
     std::fs::remove_dir_all(&*TMPDIR.lock().unwrap());
     std::process::exit(0);
-}
-
-#[inline]
-pub fn init() -> Result<()> {
-    ctrlc::set_handler(|| {
-        handle();
     })
     .context("Failed to set Ctrl-C handler")?;
 
