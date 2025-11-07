@@ -6,7 +6,6 @@ version = 4
 name = "NIaC_bootstrap"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "color-eyre",
  "colored",
  "ctrlc",
@@ -2378,6 +2377,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
+name = "niac_bootstrap"
+version = "0.1.0"
+dependencies = [
+ "color-eyre",
+ "ctrlc",
+ "owo-colors",
+ "tempdir",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "niac_error"
 version = "0.1.0"
 dependencies = [
@@ -2390,7 +2402,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "color-eyre",
- "colored",
+ "owo-colors",
  "tracing",
  "tracing-error",
  "tracing-subscriber",

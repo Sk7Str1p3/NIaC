@@ -2,7 +2,7 @@
 //! Module provides type and implementation for custom time
 //! formatting in tracing.
 
-use colored::Colorize as _;
+use owo_colors::OwoColorize as _;
 use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::time::FormatTime;
 

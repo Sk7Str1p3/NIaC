@@ -10,9 +10,9 @@
         version     = "0.1.0"
     [workspace.dependencies]
         color-eyre = "0.6.5"
-        colored    = "3.0.0"
         niac_error = { path = "crates/lib/error" }
         niac_log   = { path = "crates/lib/log" }
+        owo-colors = "4.2.3"
         tracing    = "0.1.41"
 
 [profile.release]

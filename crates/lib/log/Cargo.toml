@@ -10,7 +10,7 @@
 [dependencies]
     chrono               = "0.4.42"
     color-eyre.workspace = true
-    colored.workspace    = true
+    owo-colors.workspace    = true
     tracing.workspace    = true
     tracing-error        = "0.2.1"
     tracing-subscriber   = "=0.3.19"

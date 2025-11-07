@@ -1,7 +1,7 @@
 //! ## Formatter
 //! Code in this modules configures log format
 
-use colored::Colorize as _;
+use owo_colors::OwoColorize as _;
 use tracing::{
     Event,
     Subscriber
@@ -46,11 +46,11 @@ where
         Timer.format_time(&mut writer)?;
 
         let level = match *meta.level() {
-            tracing::Level::TRACE => "TRACE".purple(),
-            tracing::Level::DEBUG => "DEBUG".blue(),
-            tracing::Level::INFO => "INFO".green(),
-            tracing::Level::WARN => "WARN".yellow().bold(),
-            tracing::Level::ERROR => "ERROR".red().bold()
+            tracing::Level::TRACE => "TRACE".purple().to_string(),
+            tracing::Level::DEBUG => "DEBUG".blue().to_string(),
+            tracing::Level::INFO => "INFO".green().to_string(),
+            tracing::Level::WARN => "WARN".yellow().bold().to_string(),
+            tracing::Level::ERROR => "ERROR".red().bold().to_string()
         };
         write!(writer, "{sep} {level} {sep} ", sep = "∥".blue().dimmed())?;
 
