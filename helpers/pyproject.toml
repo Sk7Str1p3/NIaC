@@ -1,8 +1,0 @@
-[project]
-name = "NIaC_bootstrap"
-description = "Bootstrap script for NIaC dotfiles"
-version = "0.1.0"
-license = "MIT"
-
-[project.scripts]
-bootstrap = "bootstrap_py:main"
