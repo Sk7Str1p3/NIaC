@@ -36,8 +36,7 @@ fn main() -> Result<()> {
                     err.to_string().yellow()
                 );
                 match env::current_dir() {
-                    Ok(pwd) => {
-                        let mut pwd = pwd;
+                    Ok(mut pwd) => {
                         if !pwd.join("flake.nix").exists() {
                             tracing::warn!(
                                 "Path '{}' does not contain a {}, searching up...",
@@ -68,8 +67,7 @@ fn main() -> Result<()> {
 
         let output = match TempDir::new("secrets") {
             Ok(tmp) => {
-                let mut tmpdir = sigint::TMPDIR.lock().unwrap();
-                *tmpdir = tmp.path().to_str().unwrap().into();
+                *sigint::TMPDIR.lock().unwrap() = tmp.path().to_str().unwrap().into();
                 tmp
             },
             Err(err) => {
