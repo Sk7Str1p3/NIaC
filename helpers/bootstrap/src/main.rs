@@ -1,7 +1,11 @@
 #![doc = include_str!("../README.md")]
 
-use niac_error as error;
-use niac_log as log;
+use {
+    niac_error as error,
+    niac_log as log
+};
+
+use crate::sigint::TMPDIR;
 mod sigint;
 
 use std::env;
@@ -17,6 +21,7 @@ use color_eyre::eyre::{
 };
 use colored::Colorize as _;
 use tempdir::TempDir;
+use tracing::info;
 fn main() -> Result<()> {
     error::init()?;
     log::init()?;
@@ -26,59 +31,39 @@ fn main() -> Result<()> {
         let span = tracing::info_span!("dirs_setup");
         let _guard = span.enter();
 
-        tracing::info!("Searching {}...", "flake".blue());
-        let flake = match &env::var("NIaC_SELF") {
-            Ok(flake) => PathBuf::from(flake),
-            Err(err) => {
-                tracing::warn!(
-                    "Failed to read \"NIaC_SELF\" environment variable: {}
-                                                                       Trying to use $PWD instead...",
-                    err.to_string().yellow()
-                );
-                match env::current_dir() {
-                    Ok(mut pwd) => {
-                        if !pwd.join("flake.nix").exists() {
-                            tracing::warn!(
-                                "Path '{}' does not contain a {}, searching up...",
-                                pwd.display().to_string().yellow(),
-                                "\"flake.nix\"".blue()
-                            );
-                        }
+        let mut flake = if cfg!(feature = "nix-ready") {
+            PathBuf::from(env::var("NIaC_SELF").unwrap())
+        } else {
+            info!("Searching {}...", "flake".blue());
+            env::current_dir()
+                .context("Failed to find flake by $PWD")
+                .and_then(|mut pwd| {
+                    if pwd.join("flake.nix").exists() {
+                        return Ok(pwd);
+                    } else {
+                        info!(
+                            "Path \"{}\" does not contain a {}, searching up...",
+                            pwd.display().to_string().yellow(),
+                            "\"flake.nix\"".blue()
+                        );
                         while !pwd.join("flake.nix").exists() {
                             if !pwd.pop() {
-                                bail!("{} Failed to find flake root!", "FATAL".red().bold());
+                                bail!("Failed to find flake root!");
                             }
                         }
-                        pwd
-                    },
-                    Err(err) => {
-                        tracing::error!(
-                            "{} Failed to find flake by $PWD: {}",
-                            "FATAL:".bold().red(),
-                            err.to_string().red().bold()
-                        );
-                        return Err(eyre!(err)).context("Failed to find flake");
+                        Ok(pwd)
                     }
-                }
-            }
+                })?
         };
         tracing::info!("{} {}", "Flake:".blue().bold(), flake.display());
-        let flake = flake.join("secrets");
+        flake.push("secrets");
 
-        let output = match TempDir::new("secrets") {
-            Ok(tmp) => {
-                *sigint::TMPDIR.lock().unwrap() = tmp.path().to_str().unwrap().into();
-                tmp
-            },
-            Err(err) => {
-                tracing::error!(
-                    "{} Failed to create temporary directory: {}",
-                    "FATAL:".red().bold(),
-                    err.to_string().red().bold()
-                );
-                return Err(eyre!(err)).context("Failed to create temporary directory");
-            }
-        };
+        let output = TempDir::new("secrets")
+            .and_then(|tmp| {
+                *TMPDIR.lock().unwrap() = tmp.path().to_str().unwrap().into();
+                Ok(tmp)
+            })
+            .context("Failed to create temporary directory")?;
         tracing::info!("{} {}", "OUT:".blue().bold(), output.path().display());
 
         (flake, output)
