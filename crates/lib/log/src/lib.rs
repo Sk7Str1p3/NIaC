@@ -21,7 +21,7 @@ use tracing_subscriber::layer::SubscriberExt as _;
 </pre>
 "##]
 #[inline]
-pub fn init() -> Result<()> {
+pub fn install() -> Result<()> {
     let subscriber = tracing_subscriber::fmt()
         .event_format(format::Tracer)
         .finish()

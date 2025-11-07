@@ -23,8 +23,8 @@ use colored::Colorize as _;
 use tempdir::TempDir;
 use tracing::info;
 fn main() -> Result<()> {
-    error::init()?;
-    log::init()?;
+    error::install()?;
+    log::install()?;
     sigint::init()?;
 
     let (flake, output) = {

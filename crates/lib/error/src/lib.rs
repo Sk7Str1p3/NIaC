@@ -129,7 +129,7 @@ mod panic;
 </pre>
 "#]
 #[inline]
-pub fn init() -> Result<()> {
+pub fn install() -> Result<()> {
     let theme = Theme::dark()
         .error(Style::new().red())
         .file(Style::new().purple().bold())
