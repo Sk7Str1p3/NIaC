@@ -83,7 +83,7 @@ impl PanicMessage for Panic {
         writeln!(f, "{}", payload.blue())?;
 
         if let Some(loc) = info.location() {
-            writeln!(f, "{}{{", "Location: ")?;
+            writeln!(f, "Location: {{")?;
             writeln!(f, "   file:   {}", loc.file().purple())?;
             writeln!(f, "   line:   {}", loc.line().purple())?;
             writeln!(f, "   column: {}", loc.column().purple())?;
@@ -91,15 +91,14 @@ impl PanicMessage for Panic {
         } else {
             writeln!(
                 f,
-                "{}{}:{}:{}",
-                "Location: ".bold(),
+                "Location: {}:{}:{}",
                 "src/{unknown}.rs".purple(),
                 "??".purple(),
                 "??".purple()
             )?;
         }
 
-        write!(f, "{}", "Thread:    ")?;
+        write!(f, "Thread:    ")?;
         writeln!(
             f,
             "{} (id: {})",
