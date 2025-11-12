@@ -45,7 +45,7 @@ mod panic;
         21 │
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ BACKTRACE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                                <font color=blue>⋮ 4 frames hidden ⋮</font>                               
+                                <font color=blue>⋮ 4 frames hidden ⋮</font>
    5: <b><font color=green>&lt;E as eyre::context::ext::StdError>::ext_report</font></b><font color=gray>::h6c726ad9e2ee0184</font>
       at <b><font color=purple>/home/user/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/eyre-0.6.12/src/context.rs</font></b>:<b><font color=purple>26</font></b>
         24 │             D: Display + Send + Sync + 'static,
@@ -53,7 +53,7 @@ mod panic;
         <font color=red>26 >             Report::from_msg(msg, self)</font>
         27 │         }
         28 │     }
-                                <font color=blue>⋮ 3 frames hidden ⋮</font>                               
+                                <font color=blue>⋮ 3 frames hidden ⋮</font>
    9: <b><font color=green>bootstrap::error::init</font></b><font color=gray>::he1fa55383da4651a</font>
       at <b><font color=purple>/home/user/Documents/project/bootstrap/src/error/mod.rs</font></b>:<b><font color=purple>58</font></b>
         56 │         .capture_span_trace_by_default(true)
@@ -81,7 +81,7 @@ mod panic;
        <font color=red>158 >     let result = f();</font>
        159 │
        160 │     // prevent this frame from being tail-call optimised away
-                                <font color=blue>⋮ 15 frames hidden ⋮</font>                              
+                                <font color=blue>⋮ 15 frames hidden ⋮</font>
 
 </pre>
 "#]
@@ -99,7 +99,7 @@ mod panic;
 
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ BACKTRACE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                                <font color=blue>⋮ 8 frames hidden ⋮</font>                               
+                                <font color=blue>⋮ 8 frames hidden ⋮</font>
    9: <b><font color=green>bootstrap::log::init</font></b><font color=gray>::he4c315af3dbad96e</font>
       at <b><font color=purple>/home/user/Documents/project/src/log/mod.rs</font></b>:<b><font color=purple>16</font></b>
         14 │ #[inline]
@@ -128,25 +128,25 @@ mod panic;
        <font color=red>158 >     let result = f();</font>
        159 │ 
        160 │     // prevent this frame from being tail-call optimised away
-                                <font color=blue>⋮ 15 frames hidden ⋮</font>                              
+                                <font color=blue>⋮ 15 frames hidden ⋮</font>
 </pre>
 "#]
 #[inline]
 pub fn install() -> Result<()> {
-    let theme = Theme::dark()
-        .error(Style::new().red())
-        .file(Style::new().purple().bold())
-        .hidden_frames(Style::new().bright_blue())
-        .crate_code(Style::new().green().bold())
-        .dependency_code(Style::new().yellow())
-        .help_info_note(Style::new().bright_green())
-        .active_line(Style::new().bright_red())
-        .spantrace_target(Style::new().green().bold())
-        .line_number(Style::new().purple().bold());
-
     HookBuilder::new()
         .panic_message(panic::Panic)
-        .theme(theme)
+        .theme(
+            Theme::dark()
+                .error(Style::new().red())
+                .file(Style::new().purple().bold())
+                .hidden_frames(Style::new().bright_blue())
+                .crate_code(Style::new().green().bold())
+                .dependency_code(Style::new().yellow())
+                .help_info_note(Style::new().bright_green())
+                .active_line(Style::new().bright_red())
+                .spantrace_target(Style::new().green().bold())
+                .line_number(Style::new().purple().bold())
+        )
         .capture_span_trace_by_default(true)
         .display_location_section(true)
         .install()
