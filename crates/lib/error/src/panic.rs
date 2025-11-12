@@ -103,11 +103,7 @@ impl PanicMessage for Panic {
             f,
             "{} (id: {})",
             thread::current().name().unwrap_or("{unknown}").magenta(),
-            // TODO: remove then #67939 become stable
-            format!("{:?}", thread::current().id())
-                .trim_start_matches("ThreadId(")
-                .trim_end_matches(")")
-                .magenta()
+            thread::current().id().as_u64().magenta()
         )?;
 
         Ok(())

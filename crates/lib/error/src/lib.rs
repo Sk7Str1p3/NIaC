@@ -2,6 +2,9 @@
 //! Module for configuring and installing pretty, colorized
 //! error and panic reporting using the
 //! [`color-eyre`](../../color_eyre/index.html) crate.
+
+#![feature(thread_id_value)]
+
 use color_eyre::Result;
 use color_eyre::config::{
     HookBuilder,
