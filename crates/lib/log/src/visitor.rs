@@ -21,9 +21,8 @@ impl Visit for TracerVisitor {
         field: &tracing::field::Field,
         value: &str
     ) {
-        match field.name() {
-            "message" => self.msg = Some(value.to_owned()),
-            _ => ()
+        if field.name() == "message" {
+            self.msg = Some(value.to_owned())
         };
     }
 
@@ -32,9 +31,8 @@ impl Visit for TracerVisitor {
         field: &tracing::field::Field,
         value: &dyn std::fmt::Debug
     ) {
-        match field.name() {
-            "message" => self.msg = Some(format!("{value:?}")),
-            _ => ()
+        if field.name() == "message" {
+            self.msg = Some(format!("{value:?}"))
         };
     }
 }

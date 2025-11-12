@@ -64,16 +64,16 @@ where
                 write!(writer, "{}", span.metadata().name().dimmed())?;
 
                 let ext = span.extensions();
-                if let Some(fields) = &ext.get::<FormattedFields<F>>() {
-                    if !fields.is_empty() {
-                        write!(
-                            writer,
-                            "{}{}{}",
-                            "(".dimmed(),
-                            fields.dimmed(),
-                            ")".dimmed()
-                        )?;
-                    }
+                if let Some(fields) = &ext.get::<FormattedFields<F>>()
+                    && !fields.is_empty()
+                {
+                    write!(
+                        writer,
+                        "{}{}{}",
+                        "(".dimmed(),
+                        fields.dimmed(),
+                        ")".dimmed()
+                    )?;
                 }
             }
             write!(writer, "{}", "}".dimmed())?;
